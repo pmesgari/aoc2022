@@ -51,15 +51,11 @@ def part_1(tree):
     for key, _ in tree.items():
         size = calc_size(key, tree)
         sizes.append((key, size))
-
-    wanted = []
-    for s in sizes:
-        _, value = s
-        if value <= 100000:
-            wanted.append(value)
-
     if verbose:
         print(sizes)
+
+    wanted = map(lambda item: item[1], filter(lambda value: value[1] <= 100000, sizes))
+
     print(sum(wanted))
 
     return sizes
