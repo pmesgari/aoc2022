@@ -48,6 +48,15 @@ def parse_input(sample=True, verbose=False):
         sections.append(make_section(second))
         assignments.append(sections)
 
+    if verbose:
+        numbers = list(range(1, 10))
+        for assignment in assignments:
+            first, second = assignment
+            def print_row(row):
+                print(''.join(list(map(lambda x: '-' if x not in row else str(x), numbers))))
+            print_row(first)
+            print_row(second)
+            print('\n')
     return assignments
 
 def part_1(assignments, verbose=False):

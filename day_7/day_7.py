@@ -34,6 +34,51 @@ def parse_input(sample=True, verbose=False):
     return tree
 
 
+# def tree_to_json(current, parts, path, tree, verbose=False):
+#     result = {}
+#     if verbose:
+#         print(current, parts, path)
+#     if current not in result:
+#         result[current] = {}
+#     for part in parts:
+#         name, value = part
+#         if value != '-':
+#             result[current].update({name: value})
+#         else:
+#             new_current = name
+#             new_parts = tree[''.join(path) + current + name]
+#             new_path = path + [current]
+#             result[current].update(tree_to_json(new_current, new_parts, new_path, tree))
+
+#     return result
+
+def tree_to_json(current, path, tree, verbose=False):
+    result = {}
+    full_path = ''.join(path) + current
+    parts = tree[full_path]
+    if verbose:
+        print(current, parts, path)
+    if current not in result:
+        result[current] = {}
+    for part in parts:
+        name, value = part
+        if value != '-':
+            result[current].update({name: value})
+        else:
+            result[current].update(tree_to_json(name, path + [current], tree))
+
+    return result
+
+
+def pretty_print(tree, spacing=""):
+    for key, value in tree.items():
+        if isinstance(value, dict):
+            print(spacing + key)
+            pretty_print(tree[key], spacing + " ")
+        else:
+            print(f'{spacing}{key}: {value}')
+
+
 def calc_size(path, tree):
     size = 0
     content = tree[path]
@@ -79,6 +124,9 @@ if __name__ == '__main__':
     verbose = '-debug' in sys.argv
     sample = '-sample' in sys.argv
     tree = parse_input(sample=sample, verbose=verbose)
+    if verbose:
+        json_tree = tree_to_json(current='/', path=[], tree=tree)
+        pretty_print(json_tree)
     sizes = part_1(tree)
     part_2(sizes)
     
