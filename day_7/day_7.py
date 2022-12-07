@@ -29,26 +29,27 @@ def parse_input(sample=True, verbose=False):
         else:
             size, name = parts
             tree[key].append((name, size))
-    # print(json.dumps(tree))
-    print(tree)
+    if verbose:
+        print(tree)
     return tree
 
 
-def calc_size(path, content, tree):
+def calc_size(path, tree):
     size = 0
+    content = tree[path]
     for c in content:
-        if c[1] == '-':
-            size = size + calc_size(path + c[0], tree[path + c[0]], tree)
+        name, value = c
+        if value == '-':
+            size = size + calc_size(path + name, tree)
         else:
-            size = size + int(c[1])
+            size = size + int(value)
     return size
 
 
 def part_1(tree):
     sizes = []
-    for key, value in tree.items():
-        print(key, value)
-        size = calc_size(key, value, tree)
+    for key, _ in tree.items():
+        size = calc_size(key, tree)
         sizes.append((key, size))
 
     wanted = []
@@ -57,7 +58,8 @@ def part_1(tree):
         if value <= 100000:
             wanted.append(value)
 
-    print(sizes)
+    if verbose:
+        print(sizes)
     print(sum(wanted))
 
     return sizes
