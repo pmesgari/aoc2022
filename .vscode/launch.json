@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "args": ["-sample"],
-            "cwd": "${workspaceFolder}/day_7",
+            "cwd": "${workspaceFolder}/day_8",
             "console": "integratedTerminal",
             "justMyCode": true
         }
