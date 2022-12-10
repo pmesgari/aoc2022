@@ -44,26 +44,36 @@ def execute(instructions):
     return history
 
 
+
 def draw(history):
     crt = []
     row = ''
-    print(len(history))
+    column = 1
     for index, h in enumerate(history):
         cycle = index + 1
         _, _, _, _, x = h
-
-        if cycle > 39 and cycle % 40 == 1 or cycle == len(history) - 1:
+        
+        # last line
+        if cycle == len(history):
+            if x <= column <= x + 2:
+                row += '#'
+            else:
+                row += '.'
             crt.append(row)
             row = ''
-        if x <= cycle % 40 and cycle % 40 <= x + 2:
+            column = 1
+        if cycle > 39 and cycle % 40 == 1:
+            crt.append(row)
+            row = ''
+            column = 1
+        if x <= column <= x + 2:
             row += '#'
         else:
-            row += ' '
-    
-    print('\n'.join(crt))
+            row += '.'
         
+        column += 1
 
-
+    print('\n'.join(crt))
 
 if __name__ == '__main__':
     verbose = '-debug' in sys.argv
