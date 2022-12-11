@@ -10,79 +10,81 @@ def parse_input(sample=False):
         filename = 'sample.txt'
 
     with open(filename) as f:
-        chunks = f.read().split('\n\n')
+        chunks = [
+            [line.lstrip() for line in ch.splitlines()]
+            for ch in f.read().split('\n\n')
+        ]
 
-    monkey_lines = []
+    items = []
+    operations = []
+    test_vals = []
+    true_cases = []
+    false_cases = []
+
     for ch in chunks:
-        monkey_lines.append([line.lstrip() for line in ch.splitlines()])
+        for line in ch:
+            key, val = line.split(':')
+            if key.startswith('Starting'):
+                items.append(list(map(int, val.split(','))))
+            elif key.startswith('Operation'):
+                equation = ''.join(val.replace(' ', '').split('=')[1:])
+                operator = equation[3]
+                a, b = equation.split(operator)
+                if operator == '+':
+                    operations.append(lambda a, b=b: a + int(b))
+                elif operator == '*':
+                    if a == b:
+                        operations.append(lambda a, b=b: a * a)
+                    else:
+                        operations.append(lambda a, b=b: a * int(b))
+            elif key.startswith('Test'):
+                test_vals.append(int(val.split(' ')[-1]))
+            elif key.startswith('If true'):
+                true_cases.append(int(val.split(' ')[-1]))
+            elif key.startswith('If false'):
+                false_cases.append(int(val.split(' ')[-1]))
 
-    items = defaultdict()
-    operations = defaultdict()
-    test_vals = defaultdict()
-    true_cases = defaultdict()
-    false_cases = defaultdict()
-    for index, ml in enumerate(monkey_lines):
-        for line in ml:
-            parts = line.split(':')
-            if parts[0].startswith('Starting'):
-                items[index] = parts[1].replace(' ', '').split(',')
-            elif parts[0].startswith('Operation'):
-                equation = parts[1].replace(' ', '').split('=')
-                operand = equation[1][3]
-                arg = equation[1][4:]
-                operations[index] = (operand, arg)
-            elif parts[0].startswith('Test'):
-                test_val = parts[1].split(' ')[-1]
-                test_vals[index] = test_val
-            elif parts[0].startswith('If true'):
-                true_cases[index] = parts[1].split(' ')[-1]
-            elif parts[0].startswith('If false'):
-                false_cases[index] = parts[1].split(' ')[-1]
-
-    return items, operations, test_vals, true_cases, false_cases
+    result = list(zip(items, operations, test_vals, true_cases, false_cases))
+    return result
 
 
-def execute(ops, val):
-    operand, arg = ops
-    if arg == 'old':
-        arg = val
-    if operand == '*':
-        return int(arg) * val
-    if operand == '+':
-        return int(arg) + val
-
-def process(items, operations, test_vals, true_cases, false_cases, rounds, part_2=False):
+def simulate(monkeys, rounds, part_2=False, verbose=False):
+    """
+    x is congruent to x + a in mod n if and only if x mod n == (x + a) mod n
+    meaning the remainder of x mod n is the same as the remainder of (x + a) mod n
+    """
     counts = defaultdict(int)
-    lcm = math.lcm(*[int(v) for v in test_vals.values()])
+    lcm = math.lcm(*[int(v[2]) for v in monkeys])
     for _ in range(rounds):
-        for key, val in items.items():
-            while val:
-                item = val.pop(0)
-                counts[key] += 1
-                # print(key, item, execute(operations[key], int(item)))
-                new_val = execute(operations[key], int(item) % lcm if part_2 else int(item))
-                if new_val % int(test_vals[key]) == 0:
-                    next_monkey = true_cases[key]
-                    # print(f'thrown item {new_val} to {next_monkey}')
-                    items[int(next_monkey)].append(new_val)
+        for index, m in enumerate(monkeys):
+            items, operation, test_val, true_case, false_case = m
+            while items:
+                item = items.pop(0)
+                counts[index] += 1
+                if part_2:
+                    worry_level = operation(item % lcm)
                 else:
-                    next_monkey = false_cases[key]
-                    # print(f'thrown item {new_val} to {next_monkey}')
-                    items[int(next_monkey)].append(new_val)
-
-                # print(items)
-    
-    print(counts)
+                    worry_level = operation(item) // 3
+                if worry_level % test_val == 0:
+                    other = monkeys[true_case]
+                else:
+                    other = monkeys[false_case]
+                other_items, _, _, _, _ = other
+                other_items.append(worry_level)
+    if verbose:
+        temp = {i: k[0] for i, k in enumerate(monkeys)}
+        print(temp)
+        print(counts)
     sorted_counts = sorted(counts.values(), reverse=True)
     print(sorted_counts[0] * sorted_counts[1])
+
 
 if __name__ == '__main__':
     verbose = '-debug' in sys.argv
     sample = '-sample' in sys.argv
-
-    # part 1
-    items, operations, test_vals, true_cases, false_cases = parse_input(sample)
-    process(items, operations, test_vals, true_cases, false_cases, 20)
-    # part 2
-    items, operations, test_vals, true_cases, false_cases = parse_input(sample)
-    process(items, operations, test_vals, true_cases, false_cases, 10000, True)
+    print('-----------Part 1-----------')
+    monkeys = parse_input(sample)
+    simulate(monkeys, 20, part_2=False, verbose=verbose)
+    print('-----------Part 2-----------')
+    monkeys = parse_input(sample)
+    simulate(monkeys, 10000, True, verbose=verbose)
