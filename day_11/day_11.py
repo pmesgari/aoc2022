@@ -50,8 +50,8 @@ def parse_input(sample=False):
 
 def simulate(monkeys, rounds, part_2=False, verbose=False):
     """
-    x is congruent to x + a in mod n if and only if x mod n == (x + a) mod n
-    meaning the remainder of x mod n is the same as the remainder of (x + a) mod n
+    lcm(a, b, c, d)
+    (x + k) % a = ((x % lcm) + k) % a
     """
     counts = defaultdict(int)
     lcm = math.lcm(*[int(v[2]) for v in monkeys])
