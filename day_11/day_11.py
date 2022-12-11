@@ -50,7 +50,7 @@ def parse_input(sample=False):
 
 def simulate(monkeys, rounds, part_2=False, verbose=False):
     """
-    lcm(a, b, c, d)
+    lcm(a, b, c, d) = n
     (x + k) % a = ((x % lcm) + k) % a
     """
     counts = defaultdict(int)
