@@ -9,8 +9,10 @@
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "args": ["-sample"],
-            "cwd": "${workspaceFolder}/day_10",
+            "args": [
+                "-sample"
+            ],
+            "cwd": "${workspaceFolder}/day_12",
             "console": "integratedTerminal",
             "justMyCode": true
         }
