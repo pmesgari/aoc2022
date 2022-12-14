@@ -80,6 +80,57 @@ def compare(inp, verbose=False):
         print(ro_items)
 
 
+def merge_sort(A, p, r):
+    if p >= r:
+        return A
+    else:
+        q = (p + r) // 2
+        merge_sort(A, p, q)
+        merge_sort(A, q + 1, r)
+        merge(A, p, q, r)
+
+def merge(A, p, q, r):
+    B = []
+    C = []
+    for i in range(p, q + 1):
+        B.append(A[i])
+    for i in range(q + 1, r + 1):
+        C.append(A[i])
+
+    B.append(float('inf'))
+    C.append(float('inf'))
+
+    i = 0
+    j = 0
+
+    for k in range(p, r + 1):
+        if B[i] == float('inf'):
+            A[k] = C[j]
+            j += 1
+            continue
+        elif C[j] == float('inf'):
+            A[k] = B[i]
+            i += 1
+            continue
+        if is_valid(B[i], C[j]) < 0:
+            A[k] = B[i]
+            i += 1
+        else:
+            A[k] = C[j]
+            j += 1
+        k += 1
+
+# arr = [ [1, 1, 5, 1, 1], [1, 1, 3, 1, 1]]
+# print(merge_sort(arr, 0, len(arr) - 1))
+# print(arr)
+
+# arr = [ 2, 1]
+# print(merge_sort(arr, 0, len(arr) - 1))
+# print(arr)
+
+# arr = [[[1],[2,3,4]], [[1],4], [1, 1, 5, 1, 1], [1, 1, 3, 1, 1]]
+# print(merge_sort(arr, 0, len(arr) - 1))
+# print(arr)
 
 if __name__ == '__main__':
     verbose = '-debug' in sys.argv
@@ -93,9 +144,10 @@ if __name__ == '__main__':
     for item in inp:
         left, right = item
         part_2_inp.extend([left, right])
-    sorted_inp = sorted(part_2_inp, key=cmp_to_key(is_valid))
+    merge_sort(part_2_inp, 0, len(part_2_inp) - 1)
     distress_signal = []
-    for index, item in enumerate(sorted_inp):
+    for index, item in enumerate(part_2_inp):
         if item == [[2]] or item == [[6]]:
             distress_signal.append(index + 1)
+    print(distress_signal)
     print(f'distress signal: {distress_signal[0] * distress_signal[1]}')
