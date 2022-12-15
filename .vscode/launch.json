@@ -12,7 +12,7 @@
             "args": [
                 "-sample"
             ],
-            "cwd": "${workspaceFolder}/day_14",
+            "cwd": "${workspaceFolder}/day_15",
             "console": "integratedTerminal",
             "justMyCode": true
         }

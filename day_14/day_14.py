@@ -177,20 +177,3 @@ if __name__ == '__main__':
         part_1()
     elif p2:
         part_2()
-
-
-    
-    # print_grid(expanded_grid)
-    # count = 0
-    # prev = stringify(expanded_grid)
-    # cur = ""
-    # # fall(sand_source, expanded_grid)
-    # while prev != cur:
-    #     prev = cur
-    #     fall(sand_source, expanded_grid, verbose)
-    #     cur = stringify(expanded_grid)
-    #     count += 1
-    # print(count - 1)
-    # for i in range(95):
-    #     fall(sand_source, expanded_grid, verbose)
-    # print_grid(expanded_grid)
