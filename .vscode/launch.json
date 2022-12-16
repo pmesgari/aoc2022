@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "args": [
-                "-sample"
+                "-p2"
             ],
             "cwd": "${workspaceFolder}/day_15",
             "console": "integratedTerminal",
