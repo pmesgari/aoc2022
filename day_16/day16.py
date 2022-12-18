@@ -62,10 +62,10 @@ def dijkstra(s, graph, vertices):
     return D
 
 
-def part_1(graph, vertices, rates):
-    shortest_paths = defaultdict()
-    for key, _ in graph.items():
-        shortest_paths[key] = dijkstra(key, graph, vertices)
+def generate_all_paths(shortest_paths, rates, time_limit):
+    current_path = []
+    all_paths = []
+    previous = 'AA'
 
     nonzero_rates = []
     for v, rate in rates.items():
@@ -75,17 +75,17 @@ def part_1(graph, vertices, rates):
     opened = {}
     for v in nonzero_rates:
         opened[v] = False
-    
-    current_path = []
-    all_paths = []
-    previous = 'AA'
 
     def dfs(previous, current, time):
         time = time - shortest_paths[previous][current] - 1
         current_path.append((current, time))
         opened[current] = True
         for nxt in nonzero_rates:
+            # ensure we are never exploring current again
+            # ensure we are never exploring an already open valve
             if nxt != current and not opened[nxt]:
+                # if we already know going to the next valve means we are out of time
+                # then skip, it is not worth it to get there
                 if time - shortest_paths[current][nxt] - 1 < 2:
                     continue
                 dfs(previous=current, current=nxt, time=time)
@@ -94,27 +94,70 @@ def part_1(graph, vertices, rates):
         opened[current] = False
     
     for v in nonzero_rates:
-        dfs(previous, v, 30)
-    print(len(all_paths))
+        dfs(previous, v, time_limit)
+    return all_paths
 
-    def calc_total_pressure(path):
-        result = 0
-        for p in path:
-            valve, time = p
-            result += rates[valve] * time
-        return result
 
+def calc_total_pressure(rates, path):
+    result = 0
+    for p in path:
+        valve, time = p
+        result += rates[valve] * time
+    return result
+
+
+def part_1(graph, vertices, rates):
+    shortest_paths = defaultdict()
+    for key, _ in graph.items():
+        shortest_paths[key] = dijkstra(key, graph, vertices)
+
+    all_paths = generate_all_paths(shortest_paths, rates, 30)
     best = 0
     last_p = None
     for p in all_paths:
-        total_pressure = calc_total_pressure(p)
+        total_pressure = calc_total_pressure(rates, p)
         if total_pressure > best:
             best = total_pressure
             last_p = p
     print(last_p)
     print(best)
-    # {'GG': 25, 'SU': 22, 'DT': 18, 'KV': 14, 'NS': 11, 'YA': 8, 'HR': 4}
 
+
+def part_2(graph, vertices, rates):
+    shortest_paths = defaultdict()
+    for key, _ in graph.items():
+        shortest_paths[key] = dijkstra(key, graph, vertices)
+
+    # generate all possible paths with a time limit of 26 minutes
+    all_paths = generate_all_paths(shortest_paths, rates, 26)
+    print(len(all_paths))
+    # for each path calculate the total pressure released
+    total_pressure_releases = defaultdict(int)
+    for p in all_paths:
+        # make a tuple consisting of the valves
+        # we do not care in which order the valves are opened
+        combo = frozenset(map(lambda item: item[0], p))
+        total_pressure = calc_total_pressure(rates, p)
+        if total_pressure > total_pressure_releases[combo]:
+            total_pressure_releases[combo] = total_pressure
+    
+    print(len(total_pressure_releases))
+
+    best = 0
+    l1 = None
+    l2 = None
+    for combo1, tp1 in total_pressure_releases.items():
+        for combo2, tp2 in total_pressure_releases.items():
+            if len(combo1 & combo2) != 0:
+                continue
+            total_pressure = tp1 + tp2
+            if total_pressure > best:
+                l1 = (combo1, tp1)
+                l2 = (combo2, tp2)
+                best = total_pressure
+
+    print(l1, l2)
+    print(best)
 
 
 if __name__ == '__main__':
@@ -124,4 +167,7 @@ if __name__ == '__main__':
     p2 = '-p2' in sys.argv
 
     graph, vertices, rates = parse_input(sample, verbose)
-    part_1(graph, vertices, rates)
+    if p1:
+        part_1(graph, vertices, rates)
+    elif p2:
+        part_2(graph, vertices, rates)
