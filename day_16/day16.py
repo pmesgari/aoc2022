@@ -82,11 +82,6 @@ def part_1(graph, vertices, rates):
 
     def dfs(previous, current, time):
         time = time - shortest_paths[previous][current] - 1
-        if time < 2:
-            if current_path:
-                current_path.pop(-1)
-            all_paths.append([item for item in current_path])
-            return
         current_path.append((current, time))
         opened[current] = True
         for nxt in nonzero_rates:
