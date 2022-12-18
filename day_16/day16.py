@@ -90,8 +90,7 @@ def part_1(graph, vertices, rates):
                     continue
                 dfs(previous=current, current=nxt, time=time)
         all_paths.append([item for item in current_path])
-        if current_path:
-            current_path.pop(-1)
+        current_path.pop(-1)
         opened[current] = False
     
     for v in nonzero_rates:
