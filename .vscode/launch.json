@@ -10,9 +10,9 @@
             "request": "launch",
             "program": "${file}",
             "args": [
-                "-p2", "-sample"
+                "-p2"
             ],
-            "cwd": "${workspaceFolder}/day_16",
+            "cwd": "${workspaceFolder}/day_18",
             "console": "integratedTerminal",
             "justMyCode": true
         }

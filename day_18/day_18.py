@@ -1,5 +1,6 @@
 import sys
-from collections import defaultdict
+from collections import deque
+
 
 def parse_input(sample):
     filename = 'input.txt'
@@ -7,9 +8,12 @@ def parse_input(sample):
         filename = 'sample.txt'
 
     with open(filename) as f:
-        lines = [tuple(map(int, line.split(','))) for line in f.read().splitlines()]
-    
-    return lines
+        lines = [tuple(map(int, line.split(',')))
+                 for line in f.read().splitlines()]
+    cubes = {}
+    for line in lines:
+        cubes[line] = 6
+    return cubes
 
 
 def adj(pt):
@@ -25,28 +29,73 @@ def adj(pt):
 
 
 def part1(cubes):
-
-    counts = {}
-    for cube in cubes:
-        counts[cube] = 6
     for cube in cubes:
         for neighbour in adj(cube):
             if neighbour in cubes:
-                counts[cube] -= 1
+                cubes[cube] -= 1
 
-    total_sides = len(cubes) * 6
-    print(total_sides)
-    print(counts)
     total = 0
-    for _, val in counts.items():
+    for _, val in cubes.items():
         total += val
     print(total)
+
+
+def part2(cubes):
+    max_x = -float('inf')
+    max_y = -float('inf')
+    max_z = -float('inf')
+    min_x = float('inf')
+    min_y = float('inf')
+    min_z = float('inf')
+
+    for cube in cubes:
+        x, y, z = cube
+        max_x = max(max_x, x)
+        max_y = max(max_y, y)
+        max_z = max(max_z, z)
+        min_x = min(min_x, x)
+        min_y = min(min_y, y)
+        min_z = min(min_z, z)
+
+    range_x = range(min_x - 2, max_x + 2)
+    range_y = range(min_y - 2, max_y + 2)
+    range_z = range(min_z - 2, max_z + 2)
+
+    start = (-1, -1, -1)
+
+    def explore(start):
+        touched = 0
+        seen = set()
+        Q = deque([start])
+
+        while Q:
+            item = Q.pop()
+
+            if item in seen:
+                continue
+            seen.add(item)
+
+            for n in adj(item):
+                nx, ny, nz = n
+                if nx not in range_x or ny not in range_y or nz not in range_z:
+                    continue
+                if n in cubes:
+                    touched += 1
+                    continue
+                Q.append(n)
+
+        return touched
+
+    print(explore(start))
+
 
 if __name__ == '__main__':
     verbose = '-debug' in sys.argv
     sample = '-sample' in sys.argv
     p1 = '-p1' in sys.argv
     p2 = '-p2' in sys.argv
-
     inp = parse_input(sample)
-    part1(inp)
+    if p1:
+        part1(inp)
+    elif p2:
+        part2(inp)
