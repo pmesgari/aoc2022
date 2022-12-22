@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "args": [
-                "-p1",
+                "-p2",
                 "-sample"
             ],
             "cwd": "${workspaceFolder}/day_21",

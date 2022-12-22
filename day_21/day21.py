@@ -27,6 +27,7 @@ type_ids = {
     '*': 2,
     '-': 3,
     '/': 4,
+    '=': 5,
     1: '+',
     2: '*',
     3: '-',
@@ -58,6 +59,91 @@ class Tree:
         self.nodes = nodes
 
 
+def solve(node, result, unknowns):
+    if node is None:
+        return result
+    if node.type_id == type_ids['value']:
+        if node.label == 'humn':
+            print(result)
+        return result
+    else:
+        if node.type_id == type_ids['=']:
+            print(node.left.label, node.right.label)
+            if node.left.label in unknowns:
+                result = evaluate(node.right)
+                solve(node.left, result, unknowns)
+            elif node.right.label in unknowns:
+                result = evaluate(node.left)
+                solve(node.right, result, unknowns)
+
+        left = True
+        if node.left.label in unknowns:
+            left = None
+
+        if node.type_id == type_ids['+']:
+            if left == None:
+                result = result - evaluate(node.right)
+                solve(node.left, result, unknowns)
+            else:
+                result = result - evaluate(node.left) 
+                solve(node.right, result, unknowns)
+
+        elif node.type_id == type_ids['-']:
+            if left == None:
+                result = result + evaluate(node.right)
+                solve(node.left, result, unknowns)
+            else:
+                result = evaluate(node.left) - result
+                solve(node.right, result, unknowns)
+
+        elif node.type_id == type_ids['*']:
+            if left == None:
+                result = result // evaluate(node.right) 
+                solve(node.left, result, unknowns)
+            else:
+                result = result // evaluate(node.left)
+                solve(node.right, result, unknowns)
+        
+        elif node.type_id == type_ids['/']:
+            if left == None:
+                result = result * evaluate(node.right)
+                solve(node.left, result, unknowns)
+            else:
+                result = evaluate(node.left) // result
+                solve(node.right, result, unknowns)
+
+
+def find_parent(nodes, key):
+    root = nodes['root']
+    path = []
+    def traverse(current, path, key):
+        if current is None:
+            return False
+
+        path.append(current.label)
+
+        if current.label == key:
+            return True
+        
+        if traverse(current.left, path, key) or traverse(current.right, path, key):
+            return True
+
+        path.pop(-1)
+        return False
+
+    traverse(root, path, key)
+    return path
+
+b = Node('b', type_ids['value'], None)
+c = Node('c', type_ids['value'], 7)
+a = Node('a', type_ids['+'], left=b, right=c)
+d = Node('d', type_ids['value'], 10)
+root = Node('root', type_ids['='], left=a, right=d)
+
+# print(solve(root, None))
+# print(find_parent(root, 'd'))
+
+
 # b = Node('b', 1, type_ids['value'], None, None)
 # d = Node('d', 2, type_ids['value'], None, None)
 # e = Node('e', 2, type_ids['value'], None, None)
@@ -67,13 +153,18 @@ class Tree:
 # pretty_print(a)
 
 
-def make_a_tree(lines, values, jobs):
+def make_a_tree(lines, part2=False):
     nodes = defaultdict()
 
     def make_a_node(label, value):
         if len(value) == 1:
+            if part2 and label == 'humn':
+                val = None
+            else:
+                val = int(value[0])
             node = Node(
-                label=label, type_id=type_ids['value'], val=int(value[0]))
+                label=label, type_id=type_ids['value'], val=val)
+            nodes[label] = node
         elif len(value) == 3:
             left, op, right = value
             node = Node(label=label, type_id=type_ids[op])
@@ -84,41 +175,39 @@ def make_a_tree(lines, values, jobs):
     for label, value in lines.items():
         make_a_node(label, value)
 
-    pretty_print(nodes['root'])
+    # pretty_print(nodes['root'])
     return nodes
 
 
-def parse_input(sample):
+def parse_input(sample, part2=False):
     filename = 'input.txt'
     if sample:
         filename = 'sample.txt'
     with open(filename) as f:
         inp = f.read().splitlines()
-    node_types = defaultdict()
-    values = defaultdict()
-    jobs = defaultdict()
     lines = defaultdict()
     for line in inp:
         label, job = line.split(': ')
         job_split = job.split(' ')
         lines[label] = job_split
-        if len(job_split) == 1:
-            node_types[label] = type_ids['value']
-            values[label] = job_split[0]
-        elif len(job_split) == 3:
-            left, op, right = job.split(' ')
-            node_types[label] = type_ids[op]
-            jobs[label] = (left, op, right)
-    return make_a_tree(lines, values, jobs)
+    return make_a_tree(lines, part2)
 
 
 def part1(nodes):
-    print(evaluate(nodes['pppw']))
-    print(evaluate(nodes['sjmn']))
+    print(evaluate(nodes['root']))
+    # print(evaluate(nodes['pppw']))
+    # print(evaluate(nodes['sjmn']))
+    # find_parent(nodes, 'humn')
 
 
-def part2():
-    pass
+def part2(nodes):
+    nodes['root'].type_id = type_ids['=']
+    unknowns = find_parent(nodes, 'humn')
+    print(evaluate(nodes['qggp']))
+    # print(evaluate(nodes['tcmj']))
+    # print(unknowns)
+    # too high: 3886130274088
+    print(solve(nodes['root'], None, unknowns=unknowns))
 
 
 if __name__ == '__main__':
@@ -126,8 +215,9 @@ if __name__ == '__main__':
     sample = '-sample' in sys.argv
     p1 = '-p1' in sys.argv
     p2 = '-p2' in sys.argv
-    inp = parse_input(sample)
     if p1:
+        inp = parse_input(sample)
         part1(inp)
     elif p2:
-        part2()
+        inp = parse_input(sample, True)
+        part2(inp)
