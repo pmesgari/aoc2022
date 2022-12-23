@@ -2,6 +2,18 @@ import sys
 from collections import defaultdict
 
 
+class Node:
+    def __init__(self, label, type_id, val=None, left=None, right=None) -> None:
+        self.label = label
+        self.val = val
+        self.type_id = type_id
+        self.left = left
+        self.right = right
+
+    def __str__(self) -> str:
+        return f'Node {self.label}'
+
+
 def evaluate(node):
     if node.type_id == type_ids['value']:
         return node.val
@@ -31,7 +43,8 @@ type_ids = {
     1: '+',
     2: '*',
     3: '-',
-    4: '/'
+    4: '/',
+    5: '='
 }
 
 ops = {
@@ -42,80 +55,36 @@ ops = {
 }
 
 
-class Node:
-    def __init__(self, label, type_id, val=None, left=None, right=None) -> None:
-        self.label = label
-        self.val = val
-        self.type_id = type_id
-        self.left = left
-        self.right = right
-
-    def __str__(self) -> str:
-        return f'Node {self.label}'
-
-
-class Tree:
-    def __init__(self, nodes) -> None:
-        self.nodes = nodes
+solve_ops = {
+    1: lambda node, result, left: result - evaluate(node.left) if left else result - evaluate(node.right),
+    2: lambda node, result, left: result // evaluate(node.left) if left else result // evaluate(node.right),
+    3: lambda node, result, left: evaluate(node.left) - result if left else result + evaluate(node.right),
+    4: lambda node, result, left: evaluate(node.left) // result if left else result * evaluate(node.right),
+    5: lambda node, result, left: evaluate(node.right) if left else evaluate(node.right)
+}
 
 
 def solve(node, result, unknowns):
     if node is None:
         return result
     if node.type_id == type_ids['value']:
-        if node.label == 'humn':
-            print(result)
         return result
     else:
-        if node.type_id == type_ids['=']:
-            print(node.left.label, node.right.label)
-            if node.left.label in unknowns:
-                result = evaluate(node.right)
-                solve(node.left, result, unknowns)
-            elif node.right.label in unknowns:
-                result = evaluate(node.left)
-                solve(node.right, result, unknowns)
-
         left = True
         if node.left.label in unknowns:
             left = None
 
-        if node.type_id == type_ids['+']:
-            if left == None:
-                result = result - evaluate(node.right)
-                solve(node.left, result, unknowns)
-            else:
-                result = result - evaluate(node.left) 
-                solve(node.right, result, unknowns)
-
-        elif node.type_id == type_ids['-']:
-            if left == None:
-                result = result + evaluate(node.right)
-                solve(node.left, result, unknowns)
-            else:
-                result = evaluate(node.left) - result
-                solve(node.right, result, unknowns)
-
-        elif node.type_id == type_ids['*']:
-            if left == None:
-                result = result // evaluate(node.right) 
-                solve(node.left, result, unknowns)
-            else:
-                result = result // evaluate(node.left)
-                solve(node.right, result, unknowns)
-        
-        elif node.type_id == type_ids['/']:
-            if left == None:
-                result = result * evaluate(node.right)
-                solve(node.left, result, unknowns)
-            else:
-                result = evaluate(node.left) // result
-                solve(node.right, result, unknowns)
+        result = solve_ops[node.type_id](node, result, left)
+        if left == None:
+            return solve(node.left, result, unknowns)
+        else:
+            return solve(node.right, result, unknowns)
 
 
 def find_parent(nodes, key):
     root = nodes['root']
     path = []
+
     def traverse(current, path, key):
         if current is None:
             return False
@@ -124,7 +93,7 @@ def find_parent(nodes, key):
 
         if current.label == key:
             return True
-        
+
         if traverse(current.left, path, key) or traverse(current.right, path, key):
             return True
 
@@ -133,6 +102,7 @@ def find_parent(nodes, key):
 
     traverse(root, path, key)
     return path
+
 
 b = Node('b', type_ids['value'], None)
 c = Node('c', type_ids['value'], 7)
@@ -195,18 +165,11 @@ def parse_input(sample, part2=False):
 
 def part1(nodes):
     print(evaluate(nodes['root']))
-    # print(evaluate(nodes['pppw']))
-    # print(evaluate(nodes['sjmn']))
-    # find_parent(nodes, 'humn')
 
 
 def part2(nodes):
     nodes['root'].type_id = type_ids['=']
     unknowns = find_parent(nodes, 'humn')
-    print(evaluate(nodes['qggp']))
-    # print(evaluate(nodes['tcmj']))
-    # print(unknowns)
-    # too high: 3886130274088
     print(solve(nodes['root'], None, unknowns=unknowns))
 
 
