@@ -13,7 +13,7 @@
                 "-p1",
                 "-sample"
             ],
-            "cwd": "${workspaceFolder}/day_17",
+            "cwd": "${workspaceFolder}/day_19",
             "console": "integratedTerminal",
             "justMyCode": true
         }
