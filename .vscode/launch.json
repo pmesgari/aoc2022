@@ -11,9 +11,11 @@
             "program": "${file}",
             "args": [
                 "-p1",
+                "-debug",
                 "-sample"
+
             ],
-            "cwd": "${workspaceFolder}/day_25",
+            "cwd": "${workspaceFolder}/day_24",
             "console": "integratedTerminal",
             "justMyCode": true
         }
