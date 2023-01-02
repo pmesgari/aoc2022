@@ -69,12 +69,14 @@ class Board:
 
             blizz.update(new_row, new_col, dir)
 
-    def adj(self, row, col, allow_wait=False):
+    def adj(self, row, col, allow_wait=False, coming_back=False):
         neighbours = set()
         for dr, dc in ((0, 1), (1, 0), (0, -1), (-1, 0)):
             rr, cc = row + dr, col + dc
             # this is the destination
             if rr == self.height - 1 and cc == self.width - 2:
+                neighbours.add((rr, cc))
+            if rr == 0 and cc == 1 and coming_back:
                 neighbours.add((rr, cc))
             # within bounds
             elif 1 <= rr <= self.height - 2 and 1 <= cc <= self.width - 2:
@@ -143,11 +145,52 @@ def part1(board: Board, verbose=False):
 
     print(i)
 
-def part2():
-    pass
+def part2(board: Board, verbose=False):
+    start = (0, 1)
+    dest = (board.height - 1, len(board.grid[-1]) - 2)
+    print(dest)
 
+    i = 0
+    seen = {start}
+    while dest not in seen:
+        i += 1
+        # before advancing the blizzards everything in seen must be free
+        # for position in seen:
+        #     assert board.is_free(*position)
+        board.advance_blizzards()
+        new_seen = set()
+        for position in seen:
+            possible_moves = board.adj(*position, allow_wait=True)
+            new_seen.update(possible_moves)
+        seen = new_seen
 
+    print(i)
 
+    seen = {dest}
+    while start not in seen:
+        i += 1
+        # for position in seen:
+        #     assert board.is_free(*position)
+        board.advance_blizzards()
+        new_seen = set()
+        for position in seen:
+            possible_moves = board.adj(*position, allow_wait=True, coming_back=True)
+            new_seen.update(possible_moves)
+        seen = new_seen
+
+    seen = {start}
+    while dest not in seen:
+        i += 1
+        # for position in seen:
+        #     assert board.is_free(*position)
+        board.advance_blizzards()
+        new_seen = set()
+        for position in seen:
+            possible_moves = board.adj(*position, allow_wait=True)
+            new_seen.update(possible_moves)
+        seen = new_seen
+
+    print(i)
 
 def blizzard_tests():
     grid = [
@@ -224,7 +267,7 @@ def neighbour_tests():
     assert board.adj(0, 1) == {(1, 1)}
 
     # check the four corners
-    assert board.adj(1, 1) == {(1, 2), (2, 1)}
+    assert board.adj(1, 1, coming_back=True) == {(1, 2), (2, 1), (0, 1)}
     assert board.adj(1, 9) == {(1, 8), (2, 9)}
     assert board.adj(5, 1) == {(5, 2), (4, 1)}
     assert board.adj(5, 9) == {(4, 9), (5, 8), (6, 9)}
@@ -240,6 +283,7 @@ def neighbour_tests():
 
     # check for destination
     assert board.adj(5, 9) == {(6, 9), (5, 8), (4, 9)}
+    assert board.adj(6, 9) == {(5, 9)}
 
 
 if __name__ == '__main__':
@@ -254,7 +298,8 @@ if __name__ == '__main__':
         part1(board, verbose)
         pass
     elif p2:
-        part2()
+        board = Board(grid, blizzards)
+        part2(board, verbose)
     elif tests:
         blizzard_tests()
         neighbour_tests()
